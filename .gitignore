@@ -27,4 +27,4 @@ dist-ssr
 firebaseConfig.json
 
 # Ignorar la carpeta de dependencias (si usas Node.js)
-node_modules/
+node_modules

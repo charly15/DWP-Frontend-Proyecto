@@ -23,21 +23,21 @@ const Perfil = () => {
           },
         })
         .then((response) => {
-          console.log("Datos del usuario obtenidos:", response.data); // Verifica los datos recibidos
-          setUser(response.data); // Guardamos los datos en el estado
-          setLoading(false); // Ya no estamos cargando
+          console.log("Datos del usuario obtenidos:", response.data); 
+          setUser(response.data); 
+          setLoading(false); 
         })
         .catch((error) => {
           console.error("Error al obtener el perfil:", error);
-          localStorage.removeItem("token"); // Eliminamos el token si hay un error
-          navigate("/login"); // Redirigimos al login si hay error
+          localStorage.removeItem("token");
+          navigate("/login"); 
         });
     } else {
-      navigate("/login"); // Si no hay token, redirigir al login
+      navigate("/login"); 
     }
   }, [navigate]);
 
-  // Cerrar sesión
+ 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("username");

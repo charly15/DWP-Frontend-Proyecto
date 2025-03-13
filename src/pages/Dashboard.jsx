@@ -48,44 +48,37 @@ const Dashboard = () => {
     setModalVisible(true);
   };
 
-  const uploadImage = async (file) => {
-    const formData = new FormData();
-    formData.append("image", file);
-
-    try {
-      const response = await fetch("http://localhost:5000/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await response.json();
-      return data.imageUrl;
-    } catch (error) {
-      message.error("Error al subir imagen");
-    }
+  
+  const getBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
   };
 
   const handleSubmit = async (values) => {
     try {
       let url = "http://localhost:5000/api/products";
       let method = "POST";
+      let payload = { name: values.name, description: values.description, category: values.category };
 
       if (editingProduct) {
         url = `http://localhost:5000/api/products/${editingProduct.id}`;
         method = "PUT";
       }
 
-      const formData = new FormData();
-      formData.append("name", values.name);
-      formData.append("description", values.description);
-      formData.append("category", values.category);
-
+      
       if (values.image && values.image.file) {
-        formData.append("image", values.image.file.originFileObj);
+        const base64Image = await getBase64(values.image.file.originFileObj);
+        payload.image = base64Image;
       }
 
       await fetch(url, {
         method,
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
       message.success(editingProduct ? "Producto actualizado" : "Producto agregado");
@@ -96,27 +89,28 @@ const Dashboard = () => {
     }
   };
 
- const columns = [
-  { title: "Nombre", dataIndex: "name", key: "name" },
-  { title: "Descripción", dataIndex: "description", key: "description" },
-  { title: "Categoría", dataIndex: "category", key: "category" },
-  {
-    title: "Imagen",
-    dataIndex: "image",
-    key: "image",
-    render: (image) => image ? <img src={image} alt="Producto" style={{ width: 50, height: 50, objectFit: "cover" }} /> : "Sin imagen",
-  },
-  {
-    title: "Acciones",
-    key: "actions",
-    render: (_, record) => (
-      <>
-        <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} style={{ marginRight: 8 }} />
-        <Button icon={<DeleteOutlined />} danger onClick={() => handleDelete(record.id)} />
-      </>
-    ),
-  },
-];
+  const columns = [
+    { title: "Nombre", dataIndex: "name", key: "name" },
+    { title: "Descripción", dataIndex: "description", key: "description" },
+    { title: "Categoría", dataIndex: "category", key: "category" },
+    {
+      title: "Imagen",
+      dataIndex: "image",
+      key: "image",
+      render: (image) =>
+        image ? <img src={image} alt="Producto" style={{ width: 50, height: 50, objectFit: "cover" }} /> : "Sin imagen",
+    },
+    {
+      title: "Acciones",
+      key: "actions",
+      render: (_, record) => (
+        <>
+          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} style={{ marginRight: 8 }} />
+          <Button icon={<DeleteOutlined />} danger onClick={() => handleDelete(record.id)} />
+        </>
+      ),
+    },
+  ];
 
   return (
     <div>
@@ -131,7 +125,7 @@ const Dashboard = () => {
         onCancel={() => setModalVisible(false)}
         onOk={() => form.submit()}
       >
-        <Form form={form} layout="vertical" onFinish={handleSubmit} encType="multipart/form-data">
+        <Form form={form} layout="vertical" onFinish={handleSubmit}>
           <Form.Item name="name" label="Nombre" rules={[{ required: true, message: "Ingresa el nombre del producto" }]}>
             <Input />
           </Form.Item>

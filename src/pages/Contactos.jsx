@@ -83,7 +83,7 @@ const Contactos = () => {
   );
 };
 
-// Estilos para mantener la coherencia
+
 const styles = {
   header: {
     display: "flex",
